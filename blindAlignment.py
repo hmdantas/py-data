@@ -3,7 +3,7 @@
 
 '''
 
-Implementação do algoritmo "Blind Alignment"
+Implementação do algoritmo "Blind Alignment" publicado em:
 
 Cauteruccio F., Fortino G., Guerrieri A., Terracina G. (2014) Discovery of Hidden Correlations between Heterogeneous Wireless Sensor Data Streams. In: Fortino G., Di Fatta G., Li W., Ochoa S., Cuzzocrea A., Pathan M. (eds) Internet and Distributed Computing Systems. IDCS 2014. Lecture Notes in Computer Science, vol 8729. Springer, Cham
 
@@ -11,7 +11,6 @@ Cauteruccio F., Fortino G., Guerrieri A., Terracina G. (2014) Discovery of Hidde
 
 
 from random import shuffle
-from math import factorial
 
 def editdistance(str1, str2):
     '''
@@ -36,7 +35,7 @@ def editdistance(str1, str2):
                 dp[i][j] = j    # Min. operations = j
  
             # If second string is empty, only option is to
-            # remove all characters of second string
+            # remove all characters of first string
             elif j == 0:
                 dp[i][j] = i    # Min. operations = i
  
@@ -75,8 +74,18 @@ def initialize(M):
             else:
                 M[i][j] = 0
 
+def randomSelect(M):
 
-def neighborhood_on_lines(M, linha, coluna1, coluna2):
+    '''
+    Função para inicializar aleatoriamente a matriz booleana representando o matching schema
+    '''
+
+    initialize(M)
+    shuffle(M)
+
+
+
+def neighborhood_on_lines(M, linha, coluna1,coluna2):
 
     '''
     Função auxiliar que retorna uma matriz obtida pela perturbação de um par de simbolos 
@@ -92,19 +101,15 @@ def neighborhood_on_lines(M, linha, coluna1, coluna2):
 
             if i == linha:
                 if j == coluna1:
-#                    print "coloquei ",M[i][coluna2]," no lugar de ",N[i][j]
                     N[i][j] = M[i][coluna2]
 
                 elif j == coluna2:
-#                    print "coloquei ",elemento," no lugar de ",N[i][j]
                     N[i][j] = elemento
 
                 else:
-#                    print "coloquei ",M[i][j]," no lugar de ",N[i][j]
                     N[i][j] = M[i][j]
 
             else:
-#                print "coloquei ",M[i][j]," no lugar de ",N[i][j]
                 N[i][j] = M[i][j]
 
     return N
@@ -173,6 +178,43 @@ def neighbors(M):
 
     return list_neighbors
 
-#testes das funções
-M = [[1,0,0,0],[0,1,0,0]]
-print neighbors(M)
+def blindAlignment(str1, str2, P1, P2, T):
+
+    t = 0
+    M = [[0 for i in range(P1)] for j in range(P2)]
+    initialize(M)
+    mindist = editdistance(str1, str2, M)
+    globaldist = mindist
+    improved = True
+
+    while(improved):
+
+        improved = False
+        n = neighbors(M)
+
+        for Ml in n:
+
+            e = editdistance(str1, str2, Ml)
+
+            if (e < mindist):
+
+                mindist = e
+                improved = True
+                M = Ml
+
+        if not improved:
+
+            if mindlist < globaldist:
+
+                globaldist = mindist
+                improved = True
+                t = 0
+
+            elif (t < T):
+
+                t = t + 1
+                improved = True
+                randomSelect(M)
+                mindist = editdistance(str1, str2, M)
+
+    return globaldist
