@@ -11,190 +11,83 @@ Cauteruccio F., Fortino G., Guerrieri A., Terracina G. (2014) Discovery of Hidde
 
 
 from random import shuffle
+from copy import copy
+from math import factorial
 
-def editdistance(str1, str2):
-    '''
-    Algoritmo para encontrar a edit distance entre duas strings encontrado em
-    https://www.geeksforgeeks.org/dynamic-programming-set-5-edit-distance/
-    com pequenas alterações
-    '''
+#variaveis para teste
+str1 = "AAABCCDDCAA"
+str2 = "EEFGHGGFHH"
+align1 = [['A'],['B'],['C'],['D']]
+align2 = [['E'],['G'],['H'],['F']]
 
-    m = len(str1)
-    n = len(str2)
+def editdistance(str1, str2, align1, align2):
+    """
+    Se as strings forem de tamanhos diferentes, essa diferença está sendo preenchida com "-" ao final da menor string.
+    (Isso claramente influencia no resultado!!!!)
+    """
+    dist = 0
 
-    # Create a table to store results of subproblems
-    dp = [[0 for x in range(n+1)] for x in range(m+1)]
- 
-    # Fill d[][] in bottom up manner
-    for i in range(m+1):
-        for j in range(n+1):
- 
-            # If first string is empty, only option is to
-            # isnert all characters of second string
-            if i == 0:
-                dp[i][j] = j    # Min. operations = j
- 
-            # If second string is empty, only option is to
-            # remove all characters of first string
-            elif j == 0:
-                dp[i][j] = i    # Min. operations = i
- 
-            # If last characters are same, ignore last char
-            # and recur for remaining string
-            elif str1[i-1] == str2[j-1]:
-                dp[i][j] = dp[i-1][j-1]
- 
-            # If last character are different, consider all
-            # possibilities and find minimum
-            else:
-                dp[i][j] = 1 + min(dp[i][j-1],        # Insert
-                                   dp[i-1][j],        # Remove
-                                   dp[i-1][j-1])    # Replace
- 
-    return dp[m][n]
+    if(len(str1) < len(str2)):
+        str1 = str1 + "-"*abs(len(str1) - len(str2))
 
-def editdistance(str1, str2, M):
-    '''
-    Função para encontrar o edit distance entre as strings 1 e 2 dado o matching
-    schema M.
-    '''
+    elif(len(str2) < len(str1)):
+        str2 = str2 + "-"*abs(len(str1) - len(str2))
 
+    for i in range(len(str1)):
 
-def initialize(M):
+        index = -1
 
-    '''
-    Função para inicializar a matriz booleana representando o matching schema. 
-    Escolheu-se arbitrariamente que a matriz M0 é inicializada como uma matriz identidade
-    '''
+        #preciso encontrar a letra str1[i] no align1
+        for a in align1:
+            index = index + 1
+            if (str1[i] in a):
+                break
 
-    for i in range(len(M)):
-        for j in range(len(M[i])):
-            if j == i:
-                M[i][j] = 1
-            else:
-                M[i][j] = 0
+        #agora se a letra str2[i] estiver dentro da lista align2[index] temos um match!
+        if (str2[i] not in align2[index]):
+            dist = dist + 1
+            print "nao pareou ",str1[i]," com ",str2[i]," quando i = ",i
 
-def randomSelect(M):
+    return dist
 
-    '''
-    Função para inicializar aleatoriamente a matriz booleana representando o matching schema
-    '''
-
-    initialize(M)
-    shuffle(M)
+def initialize(str1, p1):
+    alfabeto = list(set(str1))
+    align = []
+    p = []
+    for l in alfabeto:
+        if(len(p) < p1):
+            p.append(l)
+        else:
+            align.append(p)
+            p = []
+            p.append(l)
+    if(len(p) == p1):
+        align.append(p)
+    return align
 
 
+def blindAlignment(str1, str2, p1, p2, T):
 
-def neighborhood_on_lines(M, linha, coluna1,coluna2):
+    #separando o conjunto de simbolos da string 1 e 2
+    align1 = initialize(str1, p1)
 
-    '''
-    Função auxiliar que retorna uma matriz obtida pela perturbação de um par de simbolos 
-    de uma mesma linha, selecionados por parametro, sendo coluna1 < coluna2
-    '''
-
-    N = [[0 for i in range(len(M[0]))] for j in range(len(M))]
-
-    elemento = M[linha][coluna1]
-
-    for i in range(len(M)):
-        for j in range(len(M[i])):
-
-            if i == linha:
-                if j == coluna1:
-                    N[i][j] = M[i][coluna2]
-
-                elif j == coluna2:
-                    N[i][j] = elemento
-
-                else:
-                    N[i][j] = M[i][j]
-
-            else:
-                N[i][j] = M[i][j]
-
-    return N
-
-def neighborhood_on_columns(M, coluna, linha1, linha2):
-
-    '''
-    Função auxiliar que retorna uma matriz obtida pela perturbação de um par de simbolos 
-    de uma mesma coluna, selecionados por parametro, sendo linha1 < linha2
-    '''
-
-    N = [[0 for i in range(len(M[0]))] for j in range(len(M))]
-
-    elemento = M[linha1][coluna]
-
-    for i in range(len(M)):
-        for j in range(len(M[i])):
-
-            if i == linha1:
-                if j == coluna:
-                    N[i][j] = M[linha2][coluna]
-                else:
-                    N[i][j] = M[i][j]
-
-            elif i == linha2:
-                if j == coluna:
-                    N[i][j] = elemento
-                else:
-                    N[i][j] = M[i][j]
-
-            else:
-                N[i][j] = M[i][j]
-
-    return N
-
-
-def neighbors(M):
-
-    '''
-    Função que retorna um array contendo os vizinhos do matching schema M
-    '''
-
-    list_neighbors = []
-
-    for n in range(len(M)):
-        for i in range(len(M[n])):
-            for j in range(len(M[n])):
-                if i != j:
-                    elemento = neighborhood_on_lines(M,n,i,j)
-
-                    #verificacao para nao colocar vizinhos repetidos, talvez dispensavel
-                    if elemento not in list_neighbors:
-
-                        list_neighbors.append(elemento)
-
-    for m in range(len(M[0])):
-        for i in range(len(M)):
-            for j in range(len(M)):
-                if i != j:
-                    elemento = neighborhood_on_columns(M,m,i,j)
-
-                    #verificacao para nao colocar vizinhos repetidos, talvez dispensavel
-                    if elemento not in list_neighbors:
-
-                        list_neighbors.append(elemento)
-
-    return list_neighbors
-
-def blindAlignment(str1, str2, P1, P2, T):
-
+    align2 = initialize(str2, p2)
+        
     t = 0
-    M = [[0 for i in range(P1)] for j in range(P2)]
-    initialize(M)
-    mindist = editdistance(str1, str2, M)
+    mindist = editdistance(str1, str2, align1, align2)
     globaldist = mindist
     improved = True
 
     while(improved):
 
         improved = False
-        n = neighbors(M)
+
+        #precisa implementar essa busca por vizinhos
+        n = neighbors(align1, align2)
 
         for Ml in n:
 
-            e = editdistance(str1, str2, Ml)
+            e = editdistance(str1, str2, Ml[0], Ml[1])
 
             if (e < mindist):
 
@@ -214,7 +107,8 @@ def blindAlignment(str1, str2, P1, P2, T):
 
                 t = t + 1
                 improved = True
-                randomSelect(M)
-                mindist = editdistance(str1, str2, M)
+                #precisa implementar essa inicializacao aleatoria
+                aligns = randomSelect(align1, align2)
+                mindist = editdistance(str1, str2, align2[0], aligns[1])
 
     return globaldist
