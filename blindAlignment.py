@@ -11,8 +11,6 @@ Cauteruccio F., Fortino G., Guerrieri A., Terracina G. (2014) Discovery of Hidde
 
 
 from random import shuffle, randint
-from copy import copy
-from math import factorial
 
 #variaveis para teste
 str1 = "AAABCCDDCAA"
@@ -33,7 +31,6 @@ def igualaStrings(str1, str2):
 def editdistance(str1, str2, align1, align2):
     """
     Se as strings forem de tamanhos diferentes, essa diferença está sendo preenchida com "-" ao final da menor string.
-    (Isso claramente influencia no resultado!!!!)
     """
     str1,str2 = igualaStrings(str1, str2)
 
@@ -84,12 +81,12 @@ def neighbor(align):
     align[escolhe_conjunto_2][escolhe_elemento_2] = temp
        
 
-def neighbors(align1, align2):
+def neighbors(align1, align2, num):
 
-    #estou simplesmente querendo gerar 10 vizinhos
+    #estou simplesmente querendo gerar "num" vizinhos
 
     n = []
-    for i in range(10):
+    for i in range(num):
         escolhe = randint(0,1)
 
         if(escolhe == 0):
@@ -108,7 +105,6 @@ def blindAlignment(str1, str2, p1, p2, T):
 
     #separando o conjunto de simbolos da string 1 e 2
     align1 = initialize(str1, p1)
-
     align2 = initialize(str2, p2)
         
     t = 0
@@ -119,7 +115,9 @@ def blindAlignment(str1, str2, p1, p2, T):
     while(improved):
 
         improved = False
-        n = neighbors(align1, align2)
+
+        #TODO: esta funcao esta gerando 10 vizinhos aleatorios. Implementar uma funcao neighbors que gere todos os vizinhos corretamente melhora o resultado final
+        n = neighbors(align1, align2, 10)
 
         for Ml in n:
 
@@ -147,11 +145,13 @@ def blindAlignment(str1, str2, p1, p2, T):
                 align2 = initialize(str2, p2)
                 mindist = editdistance(str1, str2, align1, align2)
 
+
+    print "pareamento final: ",align1,align2
     return globaldist
 
 def correlation_index(str1, str2, p1, p2):
 
-    globaldist = blindAlignment(str1, str2, 2, 2, 10)
+    globaldist = blindAlignment(str1, str2, p1, p2, 10)
 
     str1,str2 = igualaStrings(str1,str2)
 
